@@ -4,7 +4,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // THIS IS THE ONLY THING YOU NEED TO CHANGE - YOUR IP ADDRESS
 
 
-const BASE_URL = 'http://192.168.0.117:50012/api'; // home
+// 
+
+
+const BASE_URL = 'https://winsizer-backend.onrender.com/api'; // home
+
+
 
 // const BASE_URL = 'http://192.168.31.42:50012/api';   //clinic
 
