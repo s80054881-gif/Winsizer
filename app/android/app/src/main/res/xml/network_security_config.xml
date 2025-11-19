@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow HTTP traffic to your server -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">147.93.104.55</domain>
+        <domain includeSubdomains="true">192.168.31.42</domain>  
+        <domain includeSubdomains="true">192.168.0.112</domain>
+        <domain includeSubdomains="true">192.168.0.117</domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>
