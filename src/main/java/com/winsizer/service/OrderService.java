@@ -20,16 +20,30 @@ public class OrderService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private SubscriptionService subscriptionService;
+
     private Long getCurrentUserId() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
         return userService.findByUsername(username).getId();
     }
 
     public AddOrderResponse addOrder(AddOrderRequest request) {
+        Long userId = getCurrentUserId();
+        
+        // ✅ CHECK SUBSCRIPTION BEFORE ALLOWING ORDER
+        if (!subscriptionService.canCreateOrder(userId)) {
+            throw new RuntimeException("Order limit reached. Please upgrade to continue creating orders.");
+        }
+        
         Order order = mapRequestToOrder(request);
-        order.setUserId(getCurrentUserId());
+        order.setUserId(userId);
         calculateOrder(order);
         Order saved = orderRepository.save(order);
+        
+        // ✅ INCREMENT ORDER COUNT FOR FREE USERS
+        subscriptionService.incrementOrderCount(userId);
+        
         return mapOrderToResponse(saved);
     }
 

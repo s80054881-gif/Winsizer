@@ -11,61 +11,76 @@ import {
 import Icon from "react-native-vector-icons/Ionicons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ApiClient from "../../apiClient";
+import SubscriptionBanner from "../../components/SubscriptionBanner"; // ⭐ ADD THIS
 
 export default function ProfileScreen({ navigation }: any) {
   const [user, setUser] = useState<any>(null);
+  const [subscription, setSubscription] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-const token = await AsyncStorage.getItem("authToken");
-        if (!token) {
-          navigation.replace("Login");
-          return;
-        }
-
-        const res = await ApiClient.get("/auth/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setUser(res.data);
-      } catch (err) {
-        console.log(err);
-        Alert.alert("Session expired", "Please login again");
-        navigation.replace("Login");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    const unsubscribe = navigation.addListener("focus", () => {
+      fetchUser();
+      fetchSubscription();
+    });
     fetchUser();
+    fetchSubscription();
+    return unsubscribe;
   }, []);
 
-  const handleLogout = async () => {
-    Alert.alert(
-      "Logout",
-      "Are you sure you want to logout?",
-      [
-        {
-          text: "Cancel",
-          style: "cancel",
-        },
-        {
-          text: "Logout",
-          style: "destructive",
-          onPress: async () => {
-await AsyncStorage.removeItem("authToken");
-            // Reset navigation stack completely to prevent back navigation
-            navigation.reset({
-              index: 0,
-              routes: [{ name: "Login" }],
-            });
-          },
-        },
-      ]
-    );
+  const fetchUser = async () => {
+    try {
+      const token = await AsyncStorage.getItem("authToken");
+      if (!token) {
+        navigation.replace("Login");
+        return;
+      }
+
+      const res = await ApiClient.get("/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUser(res.data);
+    } catch (err) {
+      console.log(err);
+      Alert.alert("Session expired", "Please login again");
+      navigation.replace("Login");
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const fetchSubscription = async () => {
+    try {
+      const res = await ApiClient.get("/subscription/status");
+      setSubscription(res.data);
+    } catch (err) {
+      console.log("Error fetching subscription status:", err);
+    }
+  };
+
+const handleLogout = async () => {
+  Alert.alert(
+    "Logout",
+    "Are you sure you want to logout?",
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          await AsyncStorage.removeItem("authToken");
+
+          // Reset to Auth Navigator
+          navigation.reset({
+            index: 0,
+            routes: [{ name: "Auth" }], // <-- IMPORTANT
+          });
+        },
+      },
+    ]
+  );
+};
+
 
   if (loading) {
     return (
@@ -86,9 +101,50 @@ await AsyncStorage.removeItem("authToken");
         <View style={{ width: 24 }} />
       </View>
 
+      {/* ⭐ Subscription Banner */}
+      <SubscriptionBanner navigation={navigation} />
+
       <ScrollView style={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
-          {/* User Information Cards */}
+          
+          {/* ===================== */}
+          {/* ⭐ SUBSCRIPTION STATUS */}
+          {/* ===================== */}
+          {subscription && (
+            <View style={styles.subscriptionCard}>
+              <Text style={styles.sectionTitle}>Subscription</Text>
+
+              <View style={styles.subRow}>
+                <Text style={styles.subLabel}>Plan:</Text>
+                <Text style={styles.subValue}>
+                  {subscription.plan === "FREE" ? "Free Plan" : "Premium"}
+                </Text>
+              </View>
+
+              <View style={styles.subRow}>
+                <Text style={styles.subLabel}>Free Orders Left:</Text>
+                <Text style={styles.subValue}>{subscription.remainingFreeOrders}</Text>
+              </View>
+
+              {subscription.plan !== "FREE" && (
+                <View style={styles.subRow}>
+                  <Text style={styles.subLabel}>Valid Until:</Text>
+                  <Text style={styles.subValue}>{subscription.expiryDate || "N/A"}</Text>
+                </View>
+              )}
+
+              <TouchableOpacity
+                style={styles.upgradeButton}
+                onPress={() => navigation.navigate("Subscription")}
+              >
+                <Text style={styles.upgradeText}>
+                  {subscription.plan === "FREE" ? "Upgrade Now" : "Manage Plan"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* User Information */}
           <View style={styles.infoContainer}>
             {/* Username */}
             <View style={styles.infoCard}>
@@ -101,7 +157,7 @@ await AsyncStorage.removeItem("authToken");
               </View>
             </View>
 
-            {/* Phone Number */}
+            {/* Phone */}
             <View style={styles.infoCard}>
               <View style={styles.infoIcon}>
                 <Icon name="call-outline" size={24} color="#ffa200ff" />
@@ -122,31 +178,9 @@ await AsyncStorage.removeItem("authToken");
                 <Text style={styles.infoValue}>{user?.address || "N/A"}</Text>
               </View>
             </View>
-
-            {/* Password - Clickable to toggle visibility */}
-            <TouchableOpacity 
-              style={styles.infoCard}
-              onPress={() => setShowPassword(!showPassword)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.infoIcon}>
-                <Icon name="lock-closed-outline" size={24} color="#ffa200ff" />
-              </View>
-              <View style={styles.infoContent}>
-                <Text style={styles.infoLabel}>Password</Text>
-                <Text style={styles.infoValue}>
-                  {showPassword ? user?.password || "N/A" : "••••••••"}
-                </Text>
-              </View>
-              <Icon 
-                name={showPassword ? "eye-off-outline" : "eye-outline"} 
-                size={20} 
-                color="#888" 
-              />
-            </TouchableOpacity>
           </View>
 
-          {/* Logout Button */}
+          {/* Logout */}
           <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Icon name="log-out-outline" size={20} color="#fff" />
             <Text style={styles.logoutText}>Logout</Text>
@@ -158,17 +192,8 @@ await AsyncStorage.removeItem("authToken");
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f9fafb",
-    marginTop: 25,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
-  },
+  container: { flex: 1, backgroundColor: "#f9fafb", marginTop: 25 },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -178,22 +203,34 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#f0f0f0",
   },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#333",
-  },
-  scrollContent: {
-    flex: 1,
-  },
-  content: {
+  headerTitle: { fontSize: 20, fontWeight: "700", color: "#333" },
+
+  scrollContent: { flex: 1 },
+  content: { padding: 16 },
+
+  /* ===== subscription card ===== */
+  subscriptionCard: {
+    backgroundColor: "#fff",
     padding: 16,
-    paddingBottom: 24,
+    borderRadius: 12,
+    marginBottom: 20,
+    elevation: 3,
   },
-  infoContainer: {
-    marginTop: 16,
-    marginBottom: 24,
+  sectionTitle: { fontSize: 18, fontWeight: "700", marginBottom: 12, color: "#333" },
+  subRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 8 },
+  subLabel: { fontSize: 14, color: "#666" },
+  subValue: { fontSize: 14, fontWeight: "600", color: "#333" },
+  upgradeButton: {
+    marginTop: 14,
+    padding: 12,
+    borderRadius: 10,
+    backgroundColor: "#ffa200ff",
+    alignItems: "center",
   },
+  upgradeText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  /* ===== user info ===== */
+  infoContainer: { marginBottom: 24 },
   infoCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -201,10 +238,6 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
     elevation: 3,
   },
   infoIcon: {
@@ -216,37 +249,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 12,
   },
-  infoContent: {
-    flex: 1,
-  },
-  infoLabel: {
-    fontSize: 12,
-    color: "#888",
-    marginBottom: 4,
-    fontWeight: "500",
-  },
-  infoValue: {
-    fontSize: 16,
-    color: "#333",
-    fontWeight: "600",
-  },
+  infoContent: { flex: 1 },
+  infoLabel: { fontSize: 12, color: "#888", marginBottom: 4, fontWeight: "500" },
+  infoValue: { fontSize: 16, color: "#333", fontWeight: "600" },
+
   logoutButton: {
     flexDirection: "row",
-    alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#ef4444",
     padding: 16,
     borderRadius: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    marginTop: 10,
     elevation: 3,
   },
-  logoutText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "600",
-    marginLeft: 8,
-  },
+  logoutText: { color: "#fff", fontSize: 16, fontWeight: "600", marginLeft: 8 },
 });

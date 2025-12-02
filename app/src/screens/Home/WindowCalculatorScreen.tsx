@@ -16,6 +16,7 @@ import {
 import { Picker } from "@react-native-picker/picker";
 import Icon from "react-native-vector-icons/Ionicons";
 import apiClient from "../../apiClient";
+import SubscriptionBanner from "../../components/SubscriptionBanner"; // ⭐ NEW IMPORT
 
 export default function WindowCalculatorScreen({ navigation, route }: any) {
   const prefilledPartyName = route?.params?.prefilledPartyName || "";
@@ -30,11 +31,9 @@ export default function WindowCalculatorScreen({ navigation, route }: any) {
   const [tracks, setTracks] = useState("2");
   const [rate, setRate] = useState("");
   
-  // Color and Glass Material inputs
   const [aluminumColor, setAluminumColor] = useState("Black");
   const [glassMaterial, setGlassMaterial] = useState("Zinga 3mm");
   
-  // Reduction values
   const [handlePattiInterlockReduction, setHandlePattiInterlockReduction] = useState("1.5");
   const [bearingReduction, setBearingReduction] = useState("6.5");
   const [glassHeightReduction, setGlassHeightReduction] = useState("4");
@@ -71,46 +70,41 @@ export default function WindowCalculatorScreen({ navigation, route }: any) {
       return;
     }
 
-    // Get reduction values
     const hpIlReduction = parseFloat(handlePattiInterlockReduction) || 1.5;
     const brReduction = parseFloat(bearingReduction) || 6.5;
     const ghReduction = parseFloat(glassHeightReduction) || 4;
     const gwReduction = parseFloat(glassWidthReduction) || 0.05;
 
-    // Conversion and rounding for billing (for 1 window)
     const heightFeet = h / 12;
     const widthFeet = w / 12;
     const heightRounded = roundToHalf(heightFeet);
     const widthRounded = roundToHalf(widthFeet);
 
-    // Calculate areas (for 1 window)
     const areaPerWindow = heightRounded * widthRounded;
     const totalArea = areaPerWindow;
     const totalCost = totalArea * r;
 
-    // Aluminum cutting sizes (quantities based on standard)
     const trackTopHeight = h;
-    const trackTopHeightQty = 2; // Standard quantity
+    const trackTopHeightQty = 2;
     
     const trackTopWidth = w;
-    const trackTopWidthQty = 1; // Standard quantity
+    const trackTopWidthQty = 1;
     
     const trackBottom = w;
-    const trackBottomQty = 1; // Standard quantity
+    const trackBottomQty = 1;
     
     const handlePatti = h - hpIlReduction;
-    const handlePattiQty = t; // Same as number of tracks
+    const handlePattiQty = t;
     
     const interlock = h - hpIlReduction;
-    const interlockQty = t; // Same as number of tracks
+    const interlockQty = t;
     
     const bearingBottom = (w - brReduction) / t;
-    const bearingBottomQty = t * 2; // tracks * 1
+    const bearingBottomQty = t * 2;
 
-    // Glass cutting sizes
     const glassHeight = h - ghReduction;
     const glassWidth = bearingBottom + gwReduction;
-    const glassQuantity = t * 1; // tracks * 1 (for one window)
+    const glassQuantity = t * 1;
 
     setResults({
       billing: {
@@ -119,7 +113,7 @@ export default function WindowCalculatorScreen({ navigation, route }: any) {
         areaPerWindow: areaPerWindow.toFixed(2),
         totalArea: totalArea.toFixed(2),
         totalCost: totalCost.toFixed(2),
-        quantity: 1, // Always 1 window
+        quantity: 1,
         rate: r,
       },
       aluminum: {
@@ -147,7 +141,7 @@ export default function WindowCalculatorScreen({ navigation, route }: any) {
       inputData: {
         height: h,
         width: w,
-        quantity: 1, // Always 1
+        quantity: 1,
         windowType,
         aluminumColor,
         glassMaterial,
@@ -183,7 +177,7 @@ export default function WindowCalculatorScreen({ navigation, route }: any) {
         windowType,
         height: parseFloat(height),
         width: parseFloat(width),
-        quantity: 1, // Always 1 window
+        quantity: 1,
         tracks: parseInt(tracks),
         rate: parseFloat(rate),
         aluminumColor,
@@ -250,6 +244,7 @@ export default function WindowCalculatorScreen({ navigation, route }: any) {
               <Icon name="home" size={24} color="#fff" />
             </TouchableOpacity>
           </View>
+          <SubscriptionBanner navigation={navigation} />
 
           <ScrollView 
             style={styles.scrollContent} 
@@ -524,7 +519,6 @@ export default function WindowCalculatorScreen({ navigation, route }: any) {
     </KeyboardAvoidingView>
   );
 }
-
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#f5f5f5" },
   header: {

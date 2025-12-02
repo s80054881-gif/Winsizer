@@ -289,6 +289,14 @@ export default function DashboardScreen({ navigation }: any) {
                 >
                   <Text style={styles.addButtonText}>Create First Order</Text>
                 </TouchableOpacity>
+
+                <TouchableOpacity
+  style={styles.subscriptionButton}
+  onPress={() => navigation.navigate("Subscription")}
+>
+  <Icon name="star" size={24} color="#fff" />
+  <Text style={styles.subscriptionButtonText}>Manage Subscription</Text>
+</TouchableOpacity>
               </View>
             ) : (
               /* Order Cards */
@@ -401,6 +409,22 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9fafb",
     marginTop: 25,
   },
+
+  subscriptionButton: {
+  flexDirection: "row",
+  alignItems: "center",
+  justifyContent: "center",
+  backgroundColor: "#10b981",
+  padding: 16,
+  borderRadius: 12,
+  gap: 8,
+  marginVertical: 16,
+},
+subscriptionButtonText: {
+  color: "#fff",
+  fontSize: 16,
+  fontWeight: "700",
+},
   header: {
     flexDirection: "row",
     justifyContent: "space-between",

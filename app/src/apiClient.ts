@@ -1,19 +1,16 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// THIS IS THE ONLY THING YOU NEED TO CHANGE - YOUR IP ADDRESS
-
-
-// 
-
-
-const BASE_URL = 'https://winsizer-backend.onrender.com/api'; // home
 
 
 
-// const BASE_URL = 'http://192.168.31.42:50012/api';   //clinic
+// const BASE_URL = 'https://winsizer-backend.onrender.com/api'; //production
 
-// const BASE_URL = 'http://147.93.104.55:50012/api';   //production
+
+
+const BASE_URL = 'http://192.168.0.100:8080/api';   //clinic
+
+
 
 const apiClient = axios.create({
   baseURL: BASE_URL,

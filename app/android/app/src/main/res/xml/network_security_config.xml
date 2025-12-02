@@ -5,6 +5,8 @@
         <domain includeSubdomains="true">147.93.104.55</domain>
         <domain includeSubdomains="true">192.168.31.42</domain>  
         <domain includeSubdomains="true">192.168.0.112</domain>
+        <domain includeSubdomains="true">192.168.0.105</domain>
+        <domain includeSubdomains="true">192.168.0.100</domain>
         <domain includeSubdomains="true">192.168.0.117</domain>
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">10.0.2.2</domain>
