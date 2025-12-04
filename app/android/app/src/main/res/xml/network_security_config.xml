@@ -8,5 +8,9 @@
         <domain includeSubdomains="true">192.168.0.117</domain>
         <domain includeSubdomains="true">localhost</domain>
         <domain includeSubdomains="true">10.0.2.2</domain>
+
+
+         <!-- 🚀 YOUR PRODUCTION BACKEND -->
+        <domain includeSubdomains="true">winsizer-backend.onrender.com</domain>
     </domain-config>
 </network-security-config>
